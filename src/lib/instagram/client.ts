@@ -42,6 +42,20 @@ export async function getMe(accessToken: string): Promise<{ user_id: string; use
   );
 }
 
+// MUHIM: App darajasida webhook field'lari (comments/messages) yoqilgani YETARLI EMAS —
+// har bir Instagram akkaunt alohida shu ilova webhook'iga obuna bo'lishi kerak, aks holda
+// haqiqiy komment/DM hodisalari kelmaydi (faqat Meta'ning "Тестировать" sinov signali keladi).
+// Akkaunt ulanganda (Settings) avtomatik chaqiriladi.
+export async function subscribeAccountToWebhooks(
+  igUserId: string,
+  accessToken: string
+): Promise<void> {
+  await igFetch(`/${igUserId}/subscribed_apps`, accessToken, {
+    method: "POST",
+    body: JSON.stringify({ subscribed_fields: "comments,messages" }),
+  });
+}
+
 // Akkaunt darajasidagi asosiy statistika (obunachilar, post soni) — instagram_business_basic
 // ruxsati bilan ochiq, alohida instagram_manage_insights talab qilmaydi.
 export async function getAccountStats(

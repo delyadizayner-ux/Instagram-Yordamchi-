@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { encryptToken } from "@/lib/crypto";
-import { getMe, InstagramApiError } from "@/lib/instagram/client";
+import { getMe, subscribeAccountToWebhooks, InstagramApiError } from "@/lib/instagram/client";
 
 export async function connectInstagramAccount(formData: FormData) {
   const accessToken = String(formData.get("accessToken") || "").trim();
@@ -30,6 +30,14 @@ export async function connectInstagramAccount(formData: FormData) {
     );
 
     if (error) redirect("/settings?error=" + encodeURIComponent(error.message));
+
+    // MUHIM: shu qadam bo'lmasa, akkaunt ulangan bo'lsa ham haqiqiy komment/DM
+    // hodisalari webhook'ga kelmaydi (faqat Meta'ning sinov signali keladi).
+    try {
+      await subscribeAccountToWebhooks(me.user_id, accessToken);
+    } catch (subErr) {
+      console.error("[settings] webhook obunasi xatosi:", subErr);
+    }
   } catch (err) {
     if (err instanceof InstagramApiError) {
       redirect("/settings?error=" + encodeURIComponent(`Instagram tokeni tekshirilmadi: ${err.message}`));

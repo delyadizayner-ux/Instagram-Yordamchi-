@@ -23,25 +23,6 @@ export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const admin = createAdminClient();
 
-  // VAQTINCHALIK DIAGNOSTIKA: har qanday kelgan so'rovni (mos kelmasa ham) yozib boradi.
-  // Muammo hal bo'lgach bu blok va webhook_debug_log jadvali olib tashlanadi.
-  try {
-    await admin.from("webhook_debug_log").insert({
-      payload: {
-        headers: Object.fromEntries(req.headers.entries()),
-        body: (() => {
-          try {
-            return JSON.parse(rawBody);
-          } catch {
-            return rawBody;
-          }
-        })(),
-      },
-    });
-  } catch (err) {
-    console.error("[ig-webhook] debug-log xatosi:", err);
-  }
-
   const signature = req.headers.get("x-hub-signature-256");
   const isValid = verifyWebhookSignature(rawBody, signature, process.env.META_APP_SECRET);
   if (!isValid) {
