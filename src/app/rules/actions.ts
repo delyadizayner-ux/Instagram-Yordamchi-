@@ -7,12 +7,15 @@ export async function saveRule(formData: FormData) {
   const supabase = createClient();
   const id = String(formData.get("id") || "");
 
+  const postId = String(formData.get("postId") || "").trim() || null;
+
   const row = {
     account_id: String(formData.get("accountId") || ""),
     name: String(formData.get("name") || "Yangi qoida"),
     trigger_type: String(formData.get("triggerType") || "both"),
     keyword: String(formData.get("keyword") || "").trim() || null,
     match_type: String(formData.get("matchType") || "contains"),
+    post_id: postId,
     require_follow: formData.get("requireFollow") === "on",
     follow_reply_text: String(formData.get("followReplyText") || ""),
     not_follow_reply_text: String(formData.get("notFollowReplyText") || ""),
@@ -27,7 +30,7 @@ export async function saveRule(formData: FormData) {
     await supabase.from("automation_rules").insert({ ...row, enabled: true });
   }
 
-  redirect("/rules");
+  redirect(postId ? "/reels" : "/rules");
 }
 
 export async function toggleRule(formData: FormData) {

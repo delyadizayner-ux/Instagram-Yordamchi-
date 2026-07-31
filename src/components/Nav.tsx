@@ -3,7 +3,9 @@ import { signOut } from "@/app/login/actions";
 
 const links = [
   { href: "/dashboard", label: "Bosh sahifa" },
+  { href: "/reels", label: "Relislar" },
   { href: "/rules", label: "Qoidalar" },
+  { href: "/analytics", label: "Analitika" },
   { href: "/logs", label: "Loglar" },
   { href: "/settings", label: "Sozlamalar" },
 ];

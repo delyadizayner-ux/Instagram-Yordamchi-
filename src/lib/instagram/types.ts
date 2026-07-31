@@ -34,6 +34,19 @@ export interface IgChangeItem {
   };
 }
 
+export interface IgMediaItem {
+  id: string;
+  caption?: string;
+  media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
+  media_product_type?: "FEED" | "REELS" | "STORY";
+  thumbnail_url?: string;
+  media_url?: string;
+  permalink?: string;
+  like_count?: number;
+  comments_count?: number;
+  timestamp: string;
+}
+
 export interface IgUserProfile {
   id: string;
   username?: string;

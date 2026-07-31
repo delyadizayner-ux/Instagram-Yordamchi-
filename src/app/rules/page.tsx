@@ -5,7 +5,7 @@ import { saveRule, toggleRule, deleteRule } from "./actions";
 export default async function RulesPage({
   searchParams,
 }: {
-  searchParams: { edit?: string };
+  searchParams: { edit?: string; postId?: string; postLabel?: string };
 }) {
   const supabase = createClient();
   const {
@@ -27,6 +27,7 @@ export default async function RulesPage({
     : { data: [] as any[] };
 
   const editingRule = searchParams.edit ? rules?.find((r) => r.id === searchParams.edit) : null;
+  const postId = searchParams.postId || editingRule?.post_id || null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,8 +51,16 @@ export default async function RulesPage({
             <h2 className="font-medium mb-3">
               {editingRule ? "Qoidani tahrirlash" : "Yangi qoida qo'shish"}
             </h2>
+            {postId && (
+              <p className="text-xs bg-ig-purple/10 text-ig-purple rounded-lg px-3 py-2 mb-3">
+                🎬 Bu qoida faqat shu Reels uchun ishlaydi
+                {searchParams.postLabel ? `: "${searchParams.postLabel}"` : ""} — boshqa
+                postlarga tegishli emas.
+              </p>
+            )}
             <form action={saveRule} className="space-y-3">
               {editingRule && <input type="hidden" name="id" value={editingRule.id} />}
+              {postId && <input type="hidden" name="postId" value={postId} />}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -84,13 +93,19 @@ export default async function RulesPage({
                   <label className="block text-xs text-gray-500 mb-1">Qayerda ishlasin</label>
                   <select
                     name="triggerType"
-                    defaultValue={editingRule?.trigger_type || "both"}
+                    defaultValue={editingRule?.trigger_type || (postId ? "comment" : "both")}
                     className="w-full border rounded-lg px-3 py-2 text-sm"
                   >
                     <option value="both">Komment + DM</option>
                     <option value="comment">Faqat komment</option>
                     <option value="dm">Faqat DM</option>
                   </select>
+                  {postId && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Tavsiya: "Faqat komment" — shu reels ostiga komment yozilsa, javob DM orqali
+                      (private reply) yuboriladi.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Kalit so'z</label>
@@ -197,7 +212,7 @@ export default async function RulesPage({
                   </p>
                   <p className="text-xs text-gray-400">
                     {r.trigger_type} · kalit so'z: {r.keyword || "(hammasi)"} · obuna talab:{" "}
-                    {r.require_follow ? "ha" : "yo'q"}
+                    {r.require_follow ? "ha" : "yo'q"} {r.post_id && "· 🎬 bitta Reels'ga bog'langan"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs">

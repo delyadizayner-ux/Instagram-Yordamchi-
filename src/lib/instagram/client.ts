@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { IgUserProfile } from "./types";
+import type { IgUserProfile, IgMediaItem } from "./types";
 
 // Instagram API with Instagram Login (graph.instagram.com) — Facebook Graph API EMAS.
 // Hujjat: https://developers.facebook.com/docs/instagram-platform
@@ -40,6 +40,36 @@ export async function getMe(accessToken: string): Promise<{ user_id: string; use
     `/me?fields=user_id,username&access_token=${encodeURIComponent(accessToken)}`,
     accessToken
   );
+}
+
+// Akkaunt darajasidagi asosiy statistika (obunachilar, post soni) — instagram_business_basic
+// ruxsati bilan ochiq, alohida instagram_manage_insights talab qilmaydi.
+export async function getAccountStats(
+  igUserId: string,
+  accessToken: string
+): Promise<{ followers_count: number; media_count: number; profile_picture_url?: string }> {
+  return igFetch(
+    `/${igUserId}?fields=followers_count,media_count,profile_picture_url&access_token=${encodeURIComponent(
+      accessToken
+    )}`,
+    accessToken
+  );
+}
+
+// Akkauntning postlari (Reels/Feed) ro'yxati — har biriga alohida DM/komment
+// qoidasi biriktirish uchun (Relislar sahifasi).
+export async function getUserMedia(
+  igUserId: string,
+  accessToken: string,
+  limit = 50
+): Promise<IgMediaItem[]> {
+  const res = await igFetch(
+    `/${igUserId}/media?fields=id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,like_count,comments_count,timestamp&limit=${limit}&access_token=${encodeURIComponent(
+      accessToken
+    )}`,
+    accessToken
+  );
+  return res.data || [];
 }
 
 // Komment/DM yuborgan foydalanuvchi obuna bo'lganmi — Instagram Messaging API'ning
