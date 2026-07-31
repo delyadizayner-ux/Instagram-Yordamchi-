@@ -72,6 +72,35 @@ export async function sendDirectMessage(
   });
 }
 
+// Video/rasm fayl havolasini DM ichida HAQIQIY media (playable) sifatida yuborish.
+// Eslatma: bu faqat to'g'ridan-to'g'ri DM (/me/messages) uchun ishlaydi — kommentga
+// private_reply orqali javobda Meta faqat matnni qo'llab-quvvatlaydi (shuning uchun
+// komment oqimida havola matn ichida link sifatida yuboriladi, pastga qarang).
+export async function sendMediaAttachment(
+  recipientIgId: string,
+  mediaUrl: string,
+  type: "image" | "video",
+  accessToken: string
+): Promise<void> {
+  await igFetch(`/me/messages`, accessToken, {
+    method: "POST",
+    body: JSON.stringify({
+      recipient: { id: recipientIgId },
+      message: {
+        attachment: { type, payload: { url: mediaUrl, is_reusable: true } },
+      },
+    }),
+  });
+}
+
+export function isVideoUrl(url: string): boolean {
+  return /\.(mp4|mov|m4v|webm)(\?.*)?$/i.test(url.trim());
+}
+
+export function isImageUrl(url: string): boolean {
+  return /\.(jpe?g|png|webp|gif)(\?.*)?$/i.test(url.trim());
+}
+
 // Kommentga JAVOBAN shaxsiy DM (private reply) — komment ostidan to'g'ridan-to'g'ri
 // foydalanuvchi DM'iga tushadi, ManyChat'dagi "komment→DM" funneliga o'xshash.
 export async function sendPrivateReplyToComment(

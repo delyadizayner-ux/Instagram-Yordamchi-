@@ -3,6 +3,9 @@ import { decryptToken } from "@/lib/crypto";
 import {
   getUserProfile,
   sendDirectMessage,
+  sendMediaAttachment,
+  isVideoUrl,
+  isImageUrl,
   sendPrivateReplyToComment,
   replyToComment,
 } from "./client";
@@ -147,9 +150,16 @@ async function handleMessagingEvent(
     }
 
     const replyText = isFollower ? rule.follow_reply_text : rule.not_follow_reply_text;
-    const finalText = isFollower && rule.media_url ? `${replyText}\n\n${rule.media_url}` : replyText;
+    const media = isFollower ? rule.media_url : null;
+    const isPlayableMedia = !!media && (isVideoUrl(media) || isImageUrl(media));
 
+    // PDF/boshqa havolalar matn ichida link sifatida, video/rasm esa haqiqiy media sifatida yuboriladi.
+    const finalText = media && !isPlayableMedia ? `${replyText}\n\n${media}` : replyText;
     await sendDirectMessage(item.sender.id, finalText, accessToken);
+
+    if (media && isPlayableMedia) {
+      await sendMediaAttachment(item.sender.id, media, isVideoUrl(media) ? "video" : "image", accessToken);
+    }
 
     await logMessage(admin, {
       account_id: account.id,

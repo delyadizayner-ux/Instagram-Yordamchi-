@@ -152,14 +152,18 @@ export default async function RulesPage({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">
-                    Havola/media (ixtiyoriy)
+                    Qo'llanma (PDF havola yoki video/rasm fayl havolasi)
                   </label>
                   <input
                     name="mediaUrl"
                     defaultValue={editingRule?.media_url || ""}
-                    placeholder="https://..."
+                    placeholder="https://... (.pdf, .mp4, .jpg va h.k.)"
                     className="w-full border rounded-lg px-3 py-2 text-sm"
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    .mp4/.mov/.jpg/.png — DM ichida haqiqiy video/rasm sifatida yuboriladi. PDF va
+                    boshqa havolalar xabar matni ichida link sifatida yuboriladi.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">
