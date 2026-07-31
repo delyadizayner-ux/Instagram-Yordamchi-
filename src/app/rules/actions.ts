@@ -18,13 +18,13 @@ export async function saveRule(formData: FormData) {
     not_follow_reply_text: String(formData.get("notFollowReplyText") || ""),
     comment_ack_text: String(formData.get("commentAckText") || "").trim() || null,
     media_url: String(formData.get("mediaUrl") || "").trim() || null,
-    enabled: true,
   };
 
   if (id) {
+    // enabled/o'chirilgan holati bu yerda o'zgartirilmaydi — u faqat toggleRule orqali boshqariladi
     await supabase.from("automation_rules").update(row).eq("id", id);
   } else {
-    await supabase.from("automation_rules").insert(row);
+    await supabase.from("automation_rules").insert({ ...row, enabled: true });
   }
 
   redirect("/rules");
