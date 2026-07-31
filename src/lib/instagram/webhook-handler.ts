@@ -82,6 +82,25 @@ async function getRulesForAccount(
   return (data as AutomationRule[]) || [];
 }
 
+// Instagram ba'zan hali yozishmagan (masalan faqat komment qoldirgan) foydalanuvchi profilini
+// "obuna bo'lganmi" deb tekshirishni maxfiylik sababli rad etadi ("User consent is required").
+// Bunday holatda tekshiruvni to'xtatib qo'ymasdan, xavfsiz tomonni tanlab (xabar yuboriladi)
+// davom etamiz — aks holda butun avtomatika ishlamay qoladi.
+async function checkFollowStatus(
+  userId: string,
+  accessToken: string
+): Promise<{ isFollower: boolean; note?: string }> {
+  try {
+    const profile = await getUserProfile(userId, accessToken);
+    return { isFollower: !!profile.is_user_follow_business };
+  } catch (err) {
+    return {
+      isFollower: true,
+      note: `obuna tekshirilmadi (${err instanceof Error ? err.message : String(err)})`,
+    };
+  }
+}
+
 async function handleCommentEvent(
   admin: SupabaseClient,
   account: IgAccountRow,
@@ -101,9 +120,11 @@ async function handleCommentEvent(
 
   try {
     let isFollower = true;
+    let followNote: string | undefined;
     if (rule.require_follow) {
-      const profile = await getUserProfile(value.from.id, accessToken);
-      isFollower = !!profile.is_user_follow_business;
+      const check = await checkFollowStatus(value.from.id, accessToken);
+      isFollower = check.isFollower;
+      followNote = check.note;
     }
 
     const replyText = isFollower ? rule.follow_reply_text : rule.not_follow_reply_text;
@@ -123,6 +144,7 @@ async function handleCommentEvent(
       sender_username: value.from.username,
       was_follower: isFollower,
       action: isFollower ? "sent_dm" : "sent_follow_prompt",
+      detail: followNote,
     });
   } catch (err) {
     await logMessage(admin, {
@@ -156,9 +178,11 @@ async function handleMessagingEvent(
 
   try {
     let isFollower = true;
+    let followNote: string | undefined;
     if (rule.require_follow) {
-      const profile = await getUserProfile(item.sender.id, accessToken);
-      isFollower = !!profile.is_user_follow_business;
+      const check = await checkFollowStatus(item.sender.id, accessToken);
+      isFollower = check.isFollower;
+      followNote = check.note;
     }
 
     const replyText = isFollower ? rule.follow_reply_text : rule.not_follow_reply_text;
@@ -180,6 +204,7 @@ async function handleMessagingEvent(
       sender_ig_id: item.sender.id,
       was_follower: isFollower,
       action: isFollower ? "sent_dm" : "sent_follow_prompt",
+      detail: followNote,
     });
   } catch (err) {
     await logMessage(admin, {
