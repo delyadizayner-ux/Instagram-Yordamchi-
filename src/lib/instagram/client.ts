@@ -70,6 +70,42 @@ export async function getAccountStats(
   );
 }
 
+// Raqobatchi (istalgan boshqa Business/Creator) akkauntning OCHIQ statistikasi —
+// Business Discovery API, ularning tokeni shart emas, faqat username kifoya.
+export interface BusinessDiscoveryResult {
+  username: string;
+  followers_count?: number;
+  media_count?: number;
+  biography?: string;
+  media?: {
+    caption?: string;
+    like_count?: number;
+    comments_count?: number;
+    media_product_type?: string;
+    timestamp: string;
+  }[];
+}
+
+export async function getBusinessDiscovery(
+  igUserId: string,
+  targetUsername: string,
+  accessToken: string
+): Promise<BusinessDiscoveryResult | null> {
+  try {
+    const fields =
+      `business_discovery.username(${encodeURIComponent(targetUsername)}){` +
+      `username,followers_count,media_count,biography,` +
+      `media.limit(12){caption,like_count,comments_count,media_product_type,timestamp}}`;
+    const res = await igFetch(
+      `/${igUserId}?fields=${fields}&access_token=${encodeURIComponent(accessToken)}`,
+      accessToken
+    );
+    return res.business_discovery || null;
+  } catch {
+    return null; // raqobatchi topilmasa/xato bo'lsa jarayonni to'xtatmaymiz
+  }
+}
+
 // Akkauntning postlari (Reels/Feed) ro'yxati — har biriga alohida DM/komment
 // qoidasi biriktirish uchun (Relislar sahifasi).
 export async function getUserMedia(

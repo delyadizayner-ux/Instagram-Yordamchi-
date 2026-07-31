@@ -6,6 +6,7 @@ const links = [
   { href: "/reels", label: "Relislar" },
   { href: "/rules", label: "Qoidalar" },
   { href: "/analytics", label: "Analitika" },
+  { href: "/strategy", label: "AI Strateg" },
   { href: "/logs", label: "Loglar" },
   { href: "/settings", label: "Sozlamalar" },
 ];
