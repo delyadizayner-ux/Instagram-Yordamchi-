@@ -88,7 +88,7 @@ export default async function RulesPage({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Qayerda ishlasin</label>
                   <select
@@ -108,15 +108,6 @@ export default async function RulesPage({
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Kalit so'z</label>
-                  <input
-                    name="keyword"
-                    defaultValue={editingRule?.keyword || ""}
-                    placeholder="bo'sh = hammasiga javob"
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
                   <label className="block text-xs text-gray-500 mb-1">Moslik turi</label>
                   <select
                     name="matchType"
@@ -128,6 +119,31 @@ export default async function RulesPage({
                   </select>
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Kalit so'z (lotincha)</label>
+                  <input
+                    name="keyword"
+                    defaultValue={editingRule?.keyword || ""}
+                    placeholder="masalan: qollanma"
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Kalit so'z (kirillcha)</label>
+                  <input
+                    name="keyword2"
+                    defaultValue={editingRule?.keyword_2 || ""}
+                    placeholder="masalan: қўлланма"
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 -mt-2">
+                Ikkalasi ham ixtiyoriy — ikkalasi ham bo'sh qolsa qoida har qanday xabarga javob
+                beradi. To'ldirilsa, ikkalasidan biri mos kelishi kifoya.
+              </p>
 
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -211,8 +227,10 @@ export default async function RulesPage({
                     {r.name} {!r.enabled && <span className="text-gray-400">(o'chirilgan)</span>}
                   </p>
                   <p className="text-xs text-gray-400">
-                    {r.trigger_type} · kalit so'z: {r.keyword || "(hammasi)"} · obuna talab:{" "}
-                    {r.require_follow ? "ha" : "yo'q"} {r.post_id && "· 🎬 bitta Reels'ga bog'langan"}
+                    {r.trigger_type} · kalit so'z:{" "}
+                    {[r.keyword, r.keyword_2].filter(Boolean).join(" / ") || "(hammasi)"} · obuna
+                    talab: {r.require_follow ? "ha" : "yo'q"}{" "}
+                    {r.post_id && "· 🎬 bitta Reels'ga bog'langan"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs">

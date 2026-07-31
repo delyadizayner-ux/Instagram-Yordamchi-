@@ -14,6 +14,7 @@ export async function saveRule(formData: FormData) {
     name: String(formData.get("name") || "Yangi qoida"),
     trigger_type: String(formData.get("triggerType") || "both"),
     keyword: String(formData.get("keyword") || "").trim() || null,
+    keyword_2: String(formData.get("keyword2") || "").trim() || null,
     match_type: String(formData.get("matchType") || "contains"),
     post_id: postId,
     require_follow: formData.get("requireFollow") === "on",

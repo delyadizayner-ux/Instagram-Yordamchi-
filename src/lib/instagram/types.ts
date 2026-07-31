@@ -60,6 +60,7 @@ export interface AutomationRule {
   name: string;
   trigger_type: "comment" | "dm" | "both";
   keyword: string | null;
+  keyword_2: string | null;
   match_type: "contains" | "exact";
   post_id: string | null;
   require_follow: boolean;

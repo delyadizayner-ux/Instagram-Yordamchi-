@@ -17,16 +17,28 @@ import type {
   IgWebhookPayload,
 } from "./types";
 
+function hasKeyword(rule: AutomationRule): boolean {
+  return !!(rule.keyword?.trim() || rule.keyword_2?.trim());
+}
+
+function matchesOne(needleRaw: string, haystack: string, matchType: "contains" | "exact"): boolean {
+  const needle = needleRaw.trim().toLowerCase();
+  return matchType === "exact" ? haystack === needle : haystack.includes(needle);
+}
+
+// Kalit so'z lotin va kirill alifbosida alohida kiritilishi mumkin (keyword, keyword_2) —
+// ikkalasidan biri mos kelsa yetarli, chunki foydalanuvchilar DM'ni ikkala alifboda ham yozadi.
 function matchesKeyword(rule: AutomationRule, text: string): boolean {
-  if (!rule.keyword || !rule.keyword.trim()) return true; // kalit so'zsiz qoida = hammasiga javob
-  const needle = rule.keyword.trim().toLowerCase();
+  if (!hasKeyword(rule)) return true; // kalit so'zsiz qoida = hammasiga javob
   const haystack = text.trim().toLowerCase();
-  return rule.match_type === "exact" ? haystack === needle : haystack.includes(needle);
+  if (rule.keyword?.trim() && matchesOne(rule.keyword, haystack, rule.match_type)) return true;
+  if (rule.keyword_2?.trim() && matchesOne(rule.keyword_2, haystack, rule.match_type)) return true;
+  return false;
 }
 
 function pickMatchingRule(rules: AutomationRule[], text: string, postId?: string): AutomationRule | null {
   // Aniq kalit so'zli qoidalar avval tekshiriladi, keyin "hammasiga javob" (keyword=null) qoidalar.
-  const sorted = [...rules].sort((a, b) => Number(!!b.keyword) - Number(!!a.keyword));
+  const sorted = [...rules].sort((a, b) => Number(hasKeyword(b)) - Number(hasKeyword(a)));
   for (const rule of sorted) {
     if (rule.post_id && postId && rule.post_id !== postId) continue;
     if (matchesKeyword(rule, text)) return rule;
