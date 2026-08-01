@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { decryptToken } from "@/lib/crypto";
-import { getAccountStats, getUserMedia, getBusinessDiscovery } from "@/lib/instagram/client";
+import { buildChannelContext } from "@/lib/ai/context";
 import { generateStrategyContent } from "@/lib/ai/gemini";
 
 export async function addCompetitor(formData: FormData) {
@@ -47,52 +47,15 @@ export async function generateReport(formData: FormData) {
     .eq("account_id", accountId);
 
   const accessToken = decryptToken(account!.access_token);
-
-  const [stats, media] = await Promise.all([
-    getAccountStats(account!.ig_user_id, accessToken).catch(() => null),
-    getUserMedia(account!.ig_user_id, accessToken, 12).catch(() => []),
-  ]);
-
-  const competitorData = [];
-  for (const c of competitors || []) {
-    const data = await getBusinessDiscovery(account!.ig_user_id, c.username, accessToken);
-    if (data) competitorData.push(data);
-  }
-
-  const topPosts = media
-    .slice()
-    .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
-    .slice(0, 8)
-    .map(
-      (m) =>
-        `- "${(m.caption || "").slice(0, 80)}" | ❤${m.like_count ?? 0} 💬${m.comments_count ?? 0} | ${
-          m.media_product_type || m.media_type
-        }`
-    )
-    .join("\n");
-
-  const competitorSummary = competitorData
-    .map(
-      (c) =>
-        `@${c.username}: ${c.followers_count ?? "?"} obunachi, ${c.media_count ?? "?"} post\n` +
-        (c.media || [])
-          .slice(0, 6)
-          .map((m) => `  - "${(m.caption || "").slice(0, 60)}" | ❤${m.like_count ?? 0} 💬${m.comments_count ?? 0}`)
-          .join("\n")
-    )
-    .join("\n\n");
+  const context = await buildChannelContext(
+    account!,
+    accessToken,
+    (competitors || []).map((c) => c.username)
+  );
 
   const prompt = `Sen 15 yillik tajribaga ega professional Instagram SMM strategisan. O'zbek tilida, aniq va amaliy javob ber, umumiy gaplardan qoch.
 
-MENING AKKAUNTIM: @${account!.username || account!.ig_user_id}
-Obunachilar: ${stats?.followers_count ?? "noma'lum"}
-Postlar soni: ${stats?.media_count ?? "noma'lum"}
-
-ENG SO'NGGI POSTLARIM (like/komment bilan, engagement bo'yicha saralangan):
-${topPosts || "(ma'lumot yo'q)"}
-
-RAQOBATCHILAR TAHLILI:
-${competitorSummary || "(raqobatchi qo'shilmagan — ixtiyoriy)"}
+${context}
 
 Quyidagi tuzilishda javob ber (sarlavhalarni saqla):
 
